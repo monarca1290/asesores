@@ -1,0 +1,937 @@
+  <!DOCTYPE html>
+  <html lang="es">
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel Interno - Joyería Venezia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Montserrat', sans-serif;
+      }
+
+      body {
+        background: linear-gradient(135deg, #f5f4f2 0%, #e8e6e1 100%);
+        color: #2c2c2c;
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: auto;
+        padding: 2rem;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f7f5 100%);
+        padding: 1.5rem 2rem;
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        margin-bottom: 2rem;
+        border: 1px solid rgba(180, 151, 90, 0.1);
+      }
+
+      .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .logo img {
+        height: 60px;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .user-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #b4975a;
+        text-transform: capitalize;
+      }
+
+      .nav-buttons {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #b4975a 0%, #a08247 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(180, 151, 90, 0.3);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(180, 151, 90, 0.4);
+      }
+
+      .btn-secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+      }
+
+      .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+      }
+
+      .btn-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+      }
+
+      .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+      }
+
+      .btn-export {
+        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
+      }
+
+      .btn-export:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(23, 162, 184, 0.4);
+      }
+
+      .login {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background: linear-gradient(135deg, #f8f7f5 0%, #e9e4df 100%);
+        padding: 2rem;
+      }
+
+      .login-box {
+        background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
+        padding: 3rem;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        max-width: 450px;
+        width: 100%;
+        border: 1px solid rgba(180, 151, 90, 0.1);
+      }
+
+      .login-box .logo {
+        justify-content: center;
+        margin-bottom: 2rem;
+      }
+
+      .login-box .logo img {
+        height: 80px;
+      }
+
+      .login-box h2 {
+        margin-bottom: 2rem;
+        color: #1c1c1c;
+        font-size: 1.8rem;
+        font-weight: 700;
+      }
+
+      .login-box input {
+        padding: 1rem 1.5rem;
+        width: 100%;
+        margin-bottom: 1.5rem;
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      }
+
+      .login-box input:focus {
+        outline: none;
+        border-color: #b4975a;
+        box-shadow: 0 0 0 3px rgba(180, 151, 90, 0.1);
+      }
+
+      .login-box button {
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, #b4975a 0%, #a08247 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 6px 20px rgba(180, 151, 90, 0.3);
+      }
+
+      .login-box button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(180, 151, 90, 0.4);
+      }
+
+      .categoria-header {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #b4975a;
+        margin: 3rem 0 2rem 0;
+        text-align: center;
+        position: relative;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .categoria-header::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 3px;
+        background: linear-gradient(135deg, #b4975a 0%, #a08247 100%);
+        border-radius: 2px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+      }
+
+      .card {
+        background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(180, 151, 90, 0.1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #b4975a 0%, #a08247 100%);
+      }
+
+      .card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+      }
+
+      .segmento {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #b4975a;
+        margin-bottom: 1rem;
+        line-height: 1.3;
+      }
+
+      .descripcion {
+        font-size: 0.95rem;
+        color: #555;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+      }
+
+      .card a {
+        text-decoration: none;
+        color: #1c1c1c;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        display: inline-block;
+        border: 2px solid transparent;
+      }
+
+      .card a:hover {
+        background: linear-gradient(135deg, #b4975a 0%, #a08247 100%);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(180, 151, 90, 0.3);
+      }
+
+      .error {
+        color: #e74c3c;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        padding: 0.75rem;
+        background: rgba(231, 76, 60, 0.1);
+        border-radius: 8px;
+        border: 1px solid rgba(231, 76, 60, 0.2);
+      }
+
+      .admin-panel {
+        background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(180, 151, 90, 0.1);
+      }
+
+      .admin-panel h2 {
+        color: #b4975a;
+        margin-bottom: 2rem;
+        font-size: 1.8rem;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      }
+
+      th, td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      th {
+        background: linear-gradient(135deg, #b4975a 0%, #a08247 100%);
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .admin-actions {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .admin-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      }
+
+      .admin-input:focus {
+        outline: none;
+        border-color: #b4975a;
+        box-shadow: 0 0 0 3px rgba(180, 151, 90, 0.1);
+      }
+
+      .admin-textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-family: 'Montserrat', sans-serif;
+        min-height: 80px;
+        resize: vertical;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      }
+
+      .admin-textarea:focus {
+        outline: none;
+        border-color: #b4975a;
+        box-shadow: 0 0 0 3px rgba(180, 151, 90, 0.1);
+      }
+
+      .actions-cell {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .delete-btn {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        color: white;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.8rem;
+      }
+
+      .delete-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+      }
+
+      .save-btn {
+        background: linear-gradient(135deg, #28a745 0%, #20923a 100%);
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        color: white;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .save-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+      }
+
+      .success-message {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+        padding: 1rem;
+        border-radius: 10px;
+        margin: 1rem 0;
+        border: 1px solid #c3e6cb;
+        text-align: center;
+        font-weight: 600;
+      }
+
+      .export-section {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin: 2rem 0;
+        border: 1px solid rgba(23, 162, 184, 0.2);
+      }
+
+      .export-section h3 {
+        color: #17a2b8;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .export-section textarea {
+        width: 100%;
+        height: 200px;
+        padding: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        background: #fff;
+        resize: vertical;
+      }
+
+      .export-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+      }
+
+      @media (max-width: 768px) {
+        .header-content {
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .nav-buttons {
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+
+        .btn {
+          padding: 0.5rem 1rem;
+          font-size: 0.8rem;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+
+        .container {
+          padding: 1rem;
+        }
+
+        .login-box {
+          padding: 2rem;
+          margin: 1rem;
+        }
+
+        .export-buttons {
+          flex-direction: column;
+        }
+      }
+
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #b4975a;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="login" class="login">
+      <div class="login-box">
+        <div class="logo">
+          <img src="https://joyeriavenezia.com/wp-content/uploads/2021/11/joyeria-venezia-logo-c.svg" alt="Joyería Venezia" />
+        </div>
+        <h2>Acceso Interno</h2>
+        <input type="text" id="usuario" placeholder="Usuario (sede o 'taller')" />
+        <input type="password" id="password" placeholder="Contraseña" onkeypress="if(event.key==='Enter') verificarCredenciales()" />
+        <button onclick="verificarCredenciales()">
+          <span id="login-text">Ingresar</span>
+          <div id="login-loading" class="loading" style="display: none;"></div>
+        </button>
+        <div id="error" class="error" style="display: none">Credenciales incorrectas</div>
+      </div>
+    </div>
+
+    <div id="contenido" style="display: none">
+      <div class="header">
+        <div class="header-content">
+          <div class="logo">
+            <img src="https://joyeriavenezia.com/wp-content/uploads/2021/11/joyeria-venezia-logo-c.svg" alt="Joyería Venezia" />
+          </div>
+          <div class="user-info">
+            <span class="user-name" id="user-display"></span>
+            <div class="nav-buttons">
+              <button class="btn btn-secondary" onclick="volverInicio()" id="btn-inicio" style="display: none;">
+                🏠 Inicio
+              </button>
+              <button class="btn btn-export" onclick="mostrarExportacion()" id="btn-exportar" style="display: none;">
+                📄 Exportar Datos
+              </button>
+              <button class="btn btn-danger" onclick="cerrarSesion()">
+                🚪 Cerrar Sesión
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <div id="panel"></div>
+      </div>
+    </div>
+
+    <script>
+      const usuarios = {
+        'bosa': { password: 'bosa2025', tipo: 'sede' },
+        'casablanca': { password: 'casablanca2025', tipo: 'sede' },
+        'venecia': { password: 'venecia2025', tipo: 'sede' },
+        'galan': { password: 'galan2025', tipo: 'sede' },
+        'centro mayor': { password: 'centromayor2025', tipo: 'sede' },
+        'taller': { password: 'veneziainterno', tipo: 'admin' }
+      };
+
+      // Datos por defecto - se mantienen como respaldo
+      const documentosDefecto = [
+        {
+          categoria: 'SEGUIMIENTO',
+          segmento: '🛠️ Seguimiento Fabricaciones',
+          descripcion: 'Documento donde se registran las órdenes de servicio (fabricaciones, arreglos y relojes). Permite ver información clave del cliente, el tipo de trabajo solicitado y el estado del pedido: si ya entró o salió del área de taller.',
+          enlace: 'SEGUIMIENTO'
+        },
+        {
+          categoria: 'SEGUIMIENTO',
+          segmento: '🔄 Seguimiento Prestamos entre tiendas',
+          descripcion: 'Documento donde se registran los productos que se solicitan o prestan entre tiendas. Permite conocer el estado del préstamo, si el producto ya fue enviado, recibido o está pendiente.',
+          enlace: 'Seguimiento prestamos - SEDES JV'
+        },
+        {
+          categoria: '💲 PRECIOS',
+          segmento: '💲 Precios 2025 - Liquidador',
+          descripcion: 'Documento que permite al asesor de manera formulada conocer el valor exacto de una joya o fabricación según los precios actualizados de 2025. Incluye cálculos automáticos con márgenes, materiales y tipos de trabajo, para cotizar con rapidez y precisión.',
+          enlace: '💲PRECIOS 2025 - Liquidador'
+        },
+        {
+          categoria: '💲 PRECIOS',
+          segmento: '💲 Consideraciones en precios de venta',
+          descripcion: 'Documento que permite al asesor conocer el valor exacto de una joya o fabricación según los precios actualizados de 2025.',
+          enlace: '💲PRECIOS 2025 - Liquidador'
+        },
+        {
+          categoria: '📅 CAMPAÑAS - REDES SOCIALES',
+          segmento: 'ℹ️ Información Campañas',
+          descripcion: 'Documento con los detalles de las campañas vigentes: productos en promoción, condiciones especiales, fechas clave, entre otra información. Ayuda al asesor a ofrecer las ofertas correctas y aprovechar cada oportunidad de venta.',
+          enlace: 'ℹ️ INFORMACIÓN CAMPAÑAS'
+        },
+        {
+          categoria: '📖 VIDEOS DE APOYO',
+          segmento: '📖 Videos de Apoyo',
+          descripcion: 'Serie de videos cortos y prácticos que explican cómo usar correctamente los documentos comerciales disponibles. Ideales para formación interna, resolver dudas rápidas y mejorar el uso de herramientas clave.',
+          enlace: '📖 Videos de Apoyo'
+        },
+        {
+          categoria: '📷 BANCO DE IMÁGENES',
+          segmento: '🖼️ Banco de imágenes - Inventarios',
+          descripcion: 'Carpeta con fotografías actualizadas de productos disponibles en inventario. Sirve como apoyo visual para mostrar al cliente modelos reales, acabados y disponibilidad sin necesidad de tener la pieza físicamente.',
+          enlace: 'Banco de imágenes - Inventarios'
+        },
+        {
+          categoria: '📷 BANCO DE IMÁGENES',
+          segmento: '🖼️ Galería de imágenes - Campañas',
+          descripcion: 'Galeria de imágenes promocionales de las campañas vigentes: productos destacados, materiales visuales y contenido para compartir con clientes en tienda o por redes. Útil para comunicar mejor las ofertas y reforzar la venta visual.',
+          enlace: 'Galería de imágenes - Campañas'
+        },
+        {
+          categoria: '🧰 BODEGAS',
+          segmento: '📒 Catálogo Dijes Oro 18kt - Pulseras Tejidas',
+          descripcion: 'Galeria de imagenes con los modelos disponibles de dijes en oro de 18 quilates y pulseras tejidas. Incluye referencias, estilos y opciones combinables. Ideal para asesorar al cliente con variedad y facilitar la elección.',
+          enlace: '🧰 Bodegas'
+        },
+        {
+          categoria: '🧰 BODEGAS',
+          segmento: '🧾 Inventario Casting - BODEGA ALFREDO v2',
+          descripcion: 'Documento que muestra las fabricaciones en estado de obra gris (piezas adelantadas, aún sin terminar). Permite al asesor saber qué productos están en proceso y podrían estar disponibles antes de lo habitual.',
+          enlace: 'INVENTARIO CASTING - BODEGA ALFREDO v2'
+        },
+        {
+          categoria: '🧰 BODEGAS',
+          segmento: '💎 Stock General',
+          descripcion: 'Documento de consulta interna que muestra la disponibilidad actual de fabricaciones de catálogo, esferas y cilindros diamantados, piedras naturales y stock de argollas en obra gris. Ayuda al asesor a verificar existencias y ofrecer productos listos o en proceso.',
+          enlace: 'https://lookerstudio.google.com/reporting/dd2b8308-021a-4560-91da-06e95b3c87ca/page/p_7fypo3gipd'
+        },
+        {
+          categoria: 'ℹ️ INFO PRODUCTOS',
+          segmento: '✍️ Carta Grabados',
+          descripcion: 'Documento que detalla los estilos, tamaños, tipografías y opciones disponibles para grabados en piezas de joyería. Sirve de guía para asesorar al cliente en la elección del grabado correcto y asegurar que se haga según sus preferencias.',
+          enlace: 'ℹ️ Info Productos'
+        },
+        {
+          categoria: 'ℹ️ INFO PRODUCTOS',
+          segmento: '📕 Conocimiento de producto',
+          descripcion: 'Material formativo que contiene información esencial sobre los productos: tipos, materiales, procesos, beneficios y diferencias clave. Ayuda al asesor a responder con seguridad, generar confianza y vender con mayor efectividad.',
+          enlace: 'ℹ️ Info Productos'
+        }
+      ];
+
+      let documentos = [...documentosDefecto];
+      let usuarioActual = null;
+      let vistaActual = 'panel';
+
+      // Verificar sesión al cargar la página
+      window.addEventListener('load', function() {
+        cargarDatos();
+        verificarSesionGuardada();
+      });
+
+      function verificarSesionGuardada() {
+        try {
+          const sesionGuardada = localStorage.getItem('venezia_sesion');
+          if (sesionGuardada) {
+            const datosUsuario = JSON.parse(sesionGuardada);
+            
+            // Verificar si la sesión no ha expirado (8 horas)
+            if (datosUsuario.expires && Date.now() > datosUsuario.expires) {
+              localStorage.removeItem('venezia_sesion');
+              return;
+            }
+            
+            // Verificar que el usuario aún existe
+            if (!usuarios[datosUsuario.usuario]) {
+              localStorage.removeItem('venezia_sesion');
+              return;
+            }
+            
+            usuarioActual = datosUsuario.usuario;
+            iniciarSesion(datosUsuario.usuario, datosUsuario.tipo);
+          }
+        } catch (error) {
+          console.error('Error al verificar sesión:', error);
+          localStorage.removeItem('venezia_sesion');
+        }
+      }
+
+      function verificarCredenciales() {
+        const user = document.getElementById('usuario').value.toLowerCase().trim();
+        const pass = document.getElementById('password').value;
+        
+        // Validaciones básicas
+        if (!user || !pass) {
+          mostrarError('Por favor completa todos los campos');
+          return;
+        }
+        
+        if (user.length < 2) {
+          mostrarError('El usuario debe tener al menos 2 caracteres');
+          return;
+        }
+        
+        // Mostrar loading
+        document.getElementById('login-text').style.display = 'none';
+        document.getElementById('login-loading').style.display = 'inline-block';
+        document.getElementById('error').style.display = 'none';
+        
+        // Simular delay de autenticación
+        setTimeout(() => {
+          try {
+            if (usuarios[user] && usuarios[user].password === pass) {
+              usuarioActual = user;
+              // Guardar sesión con timestamp
+              const sesionData = {
+                usuario: user,
+                tipo: usuarios[user].tipo,
+                timestamp: Date.now(),
+                expires: Date.now() + (8 * 60 * 60 * 1000) // 8 horas
+              };
+              localStorage.setItem('venezia_sesion', JSON.stringify(sesionData));
+              iniciarSesion(user, usuarios[user].tipo);
+            } else {
+              mostrarError('Credenciales incorrectas');
+              resetearFormularioLogin();
+            }
+          } catch (error) {
+            console.error('Error en autenticación:', error);
+            mostrarError('Error interno. Intenta de nuevo.');
+            resetearFormularioLogin();
+          }
+        }, 800);
+      }
+
+      function mostrarError(mensaje) {
+        const errorDiv = document.getElementById('error');
+        errorDiv.textContent = mensaje;
+        errorDiv.style.display = 'block';
+      }
+  function resetearFormularioLogin() {
+        document.getElementById('login-text').style.display = 'inline';
+        document.getElementById('login-loading').style.display = 'none';
+      }
+
+      function iniciarSesion(usuario, tipo) {
+        document.getElementById('login').style.display = 'none';
+        document.getElementById('contenido').style.display = 'block';
+        document.getElementById('user-display').textContent = usuario;
+
+        vistaActual = 'panel';
+        if (tipo === 'admin') {
+          mostrarPanelAdministrador();
+          document.getElementById('btn-exportar').style.display = 'inline-flex';
+        } else {
+          mostrarPanelUsuario();
+        }
+      }
+
+      function cerrarSesion() {
+        localStorage.removeItem('venezia_sesion');
+        usuarioActual = null;
+        location.reload();
+      }
+
+      function volverInicio() {
+        vistaActual = 'panel';
+        mostrarPanelAdministrador();
+      }
+
+      function mostrarPanelUsuario() {
+        const panel = document.getElementById('panel');
+        panel.innerHTML = '';
+        const categorias = [...new Set(documentos.map(d => d.categoria))];
+
+        categorias.forEach(cat => {
+          const catHeader = document.createElement('h2');
+          catHeader.className = 'categoria-header';
+          catHeader.textContent = cat;
+          panel.appendChild(catHeader);
+
+          const grid = document.createElement('div');
+          grid.className = 'grid';
+
+          documentos.filter(d => d.categoria === cat).forEach(doc => {
+            const card = document.createElement('div');
+            card.className = 'card';
+
+            card.innerHTML = `
+              <div class="segmento">${doc.segmento}</div>
+              <div class="descripcion">${doc.descripcion}</div>
+              <a href="${doc.enlace}" target="_blank">Abrir documento</a>
+            `;
+            grid.appendChild(card);
+          });
+
+          panel.appendChild(grid);
+        });
+      }
+
+      function mostrarPanelAdministrador() {
+        const panel = document.getElementById('panel');
+        panel.innerHTML = '';
+        const admin = document.createElement('div');
+        admin.className = 'admin-panel';
+        admin.innerHTML = `
+          <h2>Panel Administrador</h2>
+          <div class="admin-actions">
+            <button class="btn btn-primary" onclick="agregarDocumento()">➕ Agregar Documento</button>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Categoría</th><th>Segmento</th><th>Descripción</th><th>Enlace</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="tabla-documentos"></tbody>
+          </table>
+        `;
+        panel.appendChild(admin);
+        actualizarTabla();
+      }
+
+      function actualizarTabla() {
+        const tbody = document.getElementById('tabla-documentos');
+        tbody.innerHTML = '';
+        documentos.forEach((doc, index) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><input class="admin-input" value="${doc.categoria}" onchange="editarCampo(${index}, 'categoria', this.value)"/></td>
+            <td><input class="admin-input" value="${doc.segmento}" onchange="editarCampo(${index}, 'segmento', this.value)"/></td>
+            <td><textarea class="admin-textarea" onchange="editarCampo(${index}, 'descripcion', this.value)">${doc.descripcion}</textarea></td>
+            <td><input class="admin-input" value="${doc.enlace}" onchange="editarCampo(${index}, 'enlace', this.value)"/></td>
+            <td class="actions-cell">
+              <button class="delete-btn" onclick="eliminarDocumento(${index})">Eliminar</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function editarCampo(index, campo, valor) {
+        documentos[index][campo] = valor;
+        guardarDatos();
+      }
+
+      function eliminarDocumento(index) {
+        if (confirm('¿Estás seguro de que deseas eliminar este documento?')) {
+          documentos.splice(index, 1);
+          guardarDatos();
+          actualizarTabla();
+        }
+      }
+
+      function agregarDocumento() {
+        documentos.push({ categoria: '', segmento: '', descripcion: '', enlace: '' });
+        guardarDatos();
+        actualizarTabla();
+      }
+      function guardarDatos() {
+  localStorage.setItem('venezia_documentos', JSON.stringify(documentos));
+
+  if (usuarioActual === 'taller') {
+    // Enviar cambios a Google Apps Script para sincronizar
+    documentos.forEach(doc => {
+      fetch("https://script.google.com/macros/s/AKfycbwuakGfj9RZwj4lECNdTImsO18mTs1BfAq63hx7nPvnMkH-1CjsNC28LDh0oEeBEz_9/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          Categoría: doc.categoria,
+          Segmento: doc.segmento,
+          Descripción: doc.descripcion,
+          Enlace: doc.enlace
+        })
+      }).then(res => res.text())
+        .then(msg => console.log("Guardado:", msg))
+        .catch(err => console.error("Error al guardar:", err));
+    });
+  }
+}
+
+      function cargarDatos() {
+  // Solo para usuarios normales, cargar desde la hoja
+  if (usuarioActual && usuarios[usuarioActual].tipo === 'sede') {
+    fetch("https://script.google.com/macros/s/AKfycbwuakGfj9RZwj4lECNdTImsO18mTs1BfAq63hx7nPvnMkH-1CjsNC28LDh0oEeBEz_9/exec")
+      .then(res => res.json())
+      .then(data => {
+        documentos = data;
+      })
+      .catch(err => {
+        console.error("Error al cargar desde hoja:", err);
+        // Si falla, usar datos locales como respaldo
+        const datosGuardados = localStorage.getItem('venezia_documentos');
+        if (datosGuardados) documentos = JSON.parse(datosGuardados);
+        else documentos = [...documentosDefecto];
+      });
+  } else {
+    // Admin o no logueado aún: usa localStorage o por defecto
+    const datosGuardados = localStorage.getItem('venezia_documentos');
+    if (datosGuardados) documentos = JSON.parse(datosGuardados);
+    else documentos = [...documentosDefecto];
+  }
+}
+      function mostrarExportacion() {
+        vistaActual = 'export';
+        const panel = document.getElementById('panel');
+        panel.innerHTML = '';
+        const cont = document.createElement('div');
+        cont.className = 'export-section';
+        cont.innerHTML = `
+          <h3>Exportar documentos JSON</h3>
+          <textarea readonly>${JSON.stringify(documentos, null, 2)}</textarea>
+          <div class="export-buttons">
+            <button class="btn btn-secondary" onclick="volverInicio()">Volver</button>
+          </div>
+        `;
+        panel.appendChild(cont);
+      }
+    </script>
+  </body>
+  </html>
