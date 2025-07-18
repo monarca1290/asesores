@@ -725,6 +725,7 @@
       }
     ];
 
+    
     let documentos = [...documentosDefecto];
     let usuarioActual = '';
     let conexionOnline = false;
@@ -771,10 +772,8 @@
           // Mostrar botones según tipo de usuario
           if (usuarios[usuario].tipo === 'admin') {
             document.getElementById('btn-sync').style.display = 'inline-flex';
-            document.getElementById('btn-exportar').style.display = 'inline-flex';
             mostrarPanelAdmin();
           } else {
-            document.getElementById('btn-inicio').style.display = 'inline-flex';
             mostrarDocumentos();
           }
           
@@ -800,7 +799,7 @@
     }
 
     function volverInicio() {
-      if (usuarios[usuarioActual]?.tipo === 'admin') {
+      if (usuarios[usuarioActual] && usuarios[usuarioActual].tipo === 'admin') {
         mostrarPanelAdmin();
       } else {
         mostrarDocumentos();
@@ -1001,7 +1000,7 @@
         statusDiv.className = 'sync-status success';
         statusDiv.textContent = 'Sincronización completada exitosamente';
         
-        if (usuarios[usuarioActual]?.tipo === 'admin') {
+        if (usuarios[usuarioActual] && usuarios[usuarioActual].tipo === 'admin') {
           mostrarPanelAdmin();
         } else {
           mostrarDocumentos();
@@ -1045,41 +1044,15 @@
     }
 
     function mostrarExportacion() {
-      const panel = document.getElementById('panel');
-      const jsonData = JSON.stringify(documentos, null, 2);
-      
-      panel.innerHTML = `
-        <div class="admin-panel">
-          <h2>Exportar Datos</h2>
-          <div class="export-section">
-            <h3>Datos en formato JSON</h3>
-            <textarea readonly>${jsonData}</textarea>
-            <div class="export-buttons">
-              <button class="btn btn-export" onclick="copiarJSON()">📋 Copiar JSON</button>
-              <button class="btn btn-export" onclick="descargarJSON()">💾 Descargar JSON</button>
-              <button class="btn btn-secondary" onclick="volverInicio()">🔙 Volver</button>
-            </div>
-          </div>
-        </div>
-      `;
+      // Función removida - no se necesita
     }
 
     function copiarJSON() {
-      const textarea = document.querySelector('.export-section textarea');
-      textarea.select();
-      document.execCommand('copy');
-      alert('JSON copiado al portapapeles');
+      // Función removida - no se necesita
     }
 
     function descargarJSON() {
-      const dataStr = JSON.stringify(documentos, null, 2);
-      const dataBlob = new Blob([dataStr], {type: 'application/json'});
-      const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'panel_joyeria_venezia.json';
-      link.click();
-      URL.revokeObjectURL(url);
+      // Función removida - no se necesita
     }
 
     // Cargar datos al iniciar
