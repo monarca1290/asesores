@@ -631,16 +631,18 @@
   </div>
 
   <script>
-  const usuarios = {
-  'bosa': { password: 'bosa2025', tipo: 'sede' },
-  'casablanca': { password: 'casablanca2025', tipo: 'sede' },
-  'venecia': { password: 'venecia2025', tipo: 'sede' },
-  'galan': { password: 'galan2025', tipo: 'sede' },
-  'centro mayor': { password: 'centromayor2025', tipo: 'sede' },
-  'dianaguzman': { password: 'dianaguzman2025', tipo: 'sede' },
-  'taller': { password: 'taller2025', tipo: 'taller' },
-  'Admin JV': { password: 'veneziainterno', tipo: 'admin' }
-};
+
+    const usuarios = {
+      'bosa': { password: 'bosa2025', tipo: 'sede' },
+      'casablanca': { password: 'casablanca2025', tipo: 'sede' },
+      'venecia': { password: 'venecia2025', tipo: 'sede' },
+      'galan': { password: 'galan2025', tipo: 'sede' },
+      'centromayor': { password: 'centromayor2025', tipo: 'sede' },
+      'dianaguzman': { password: 'dianaguzman2025', tipo: 'completo' },
+      'adminjv': { password: 'veneziainterno', tipo: 'admin' },
+      'taller': { password: 'taller2025', tipo: 'taller' }
+    };
+
 
     // URL del Apps Script
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbBHsOmoomcWJteYdfnzdUy_UD9F6UJ0cgBP9nq4IVdRGZQQNeNT0a8gDLaFfIXE29mQ/exec";
@@ -815,21 +817,22 @@
   loginBtn.disabled = true;
 
   setTimeout(() => {
-    if (usuarios[usuario] && usuarios[usuario].password === password) {
-      usuarioActual = usuario;
-      document.getElementById('login').style.display = 'none';
-      document.getElementById('contenido').style.display = 'block';
-      document.getElementById('user-display').textContent = usuario;
-      
-      if (usuarios[usuario].tipo === 'admin') {
-        document.getElementById('btn-sync').style.display = 'inline-flex';
-        mostrarPanelAdmin();
-      } else if (usuarios[usuario].tipo === 'taller') {
-        mostrarDocumentosTaller();
-      } else {
-        mostrarDocumentos();
-      }
-      
+if (usuarios[usuario] && usuarios[usuario].password === password) {
+  usuarioActual = usuario;
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('contenido').style.display = 'block';
+  document.getElementById('user-display').textContent = usuario;
+  
+  if (usuarios[usuario].tipo === 'admin') {
+    document.getElementById('btn-sync').style.display = 'inline-flex';
+    mostrarPanelAdmin();
+  } else if (usuarios[usuario].tipo === 'taller') {
+    mostrarDocumentosTaller();
+  } else if (usuarios[usuario].tipo === 'completo') {
+    mostrarDocumentosCompletos(); // Nueva función
+  } else {
+    mostrarDocumentos();
+  }
       cargarDatos();
       verificarConexion();
     } else {
@@ -857,7 +860,31 @@
         mostrarDocumentos();
       }
     }
-
+function mostrarDocumentosCompletos() {
+  const panel = document.getElementById('panel');
+  const todosDocumentos = [...documentos, ...documentosTaller];
+  const categorias = [...new Set(todosDocumentos.map(doc => doc.categoria))];
+  
+  let html = '';
+  categorias.forEach(categoria => {
+    html += `<h2 class="categoria-header">${categoria}</h2>`;
+    html += '<div class="grid">';
+    
+    todosDocumentos.filter(doc => doc.categoria === categoria).forEach(doc => {
+      html += `
+        <div class="card">
+          <div class="segmento">${doc.segmento}</div>
+          <div class="descripcion">${doc.descripcion}</div>
+          <a href="${doc.enlace}" target="_blank">Abrir Documento</a>
+        </div>
+      `;
+    });
+    
+    html += '</div>';
+  });
+  
+  panel.innerHTML = html;
+}
     function mostrarDocumentos() {
       const panel = document.getElementById('panel');
       const categorias = [...new Set(documentos.map(doc => doc.categoria))];
@@ -1141,6 +1168,8 @@ function volverInicio() {
     mostrarPanelAdmin();
   } else if (usuarios[usuarioActual] && usuarios[usuarioActual].tipo === 'taller') {
     mostrarDocumentosTaller();
+  } else if (usuarios[usuarioActual] && usuarios[usuarioActual].tipo === 'completo') {
+    mostrarDocumentosCompletos();
   } else {
     mostrarDocumentos();
   }
