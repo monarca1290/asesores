@@ -631,15 +631,16 @@
   </div>
 
   <script>
-    const usuarios = {
-      'bosa': { password: 'bosa2025', tipo: 'sede' },
-      'casablanca': { password: 'casablanca2025', tipo: 'sede' },
-      'venecia': { password: 'venecia2025', tipo: 'sede' },
-      'galan': { password: 'galan2025', tipo: 'sede' },
-      'centro mayor': { password: 'centromayor2025', tipo: 'sede' },
-      'Diana Guzman': { password: 'dianaguzman2025', tipo: 'sede' },
-      'Admin JV': { password: 'veneziainterno', tipo: 'admin' }
-    };
+  const usuarios = {
+  'bosa': { password: 'bosa2025', tipo: 'sede' },
+  'casablanca': { password: 'casablanca2025', tipo: 'sede' },
+  'venecia': { password: 'venecia2025', tipo: 'sede' },
+  'galan': { password: 'galan2025', tipo: 'sede' },
+  'centro mayor': { password: 'centromayor2025', tipo: 'sede' },
+  'Diana Guzman': { password: 'dianaguzman2025', tipo: 'sede' },
+  'taller': { password: 'taller2025', tipo: 'taller' },
+  'Admin JV': { password: 'veneziainterno', tipo: 'admin' }
+};
 
     // URL del Apps Script
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbBHsOmoomcWJteYdfnzdUy_UD9F6UJ0cgBP9nq4IVdRGZQQNeNT0a8gDLaFfIXE29mQ/exec";
@@ -726,6 +727,57 @@
       }
     ];
 
+    const documentosTaller = [
+  {
+    categoria: '🔧 PRODUCCIÓN TALLER',
+    segmento: '📋 Control de Órdenes de Trabajo',
+    descripcion: 'Sistema para gestionar y hacer seguimiento a todas las órdenes de trabajo del taller, incluyendo fabricaciones, reparaciones y mantenimientos.',
+    enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-1'
+  },
+  {
+    categoria: '🔧 PRODUCCIÓN TALLER',
+    segmento: '⏱️ Tiempos de Producción',
+    descripcion: 'Registro y control de tiempos estimados vs reales de cada proceso de producción para optimizar la planificación.',
+    enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-2'
+  },
+  {
+    categoria: '📦 MATERIALES',
+    segmento: '📊 Inventario de Materiales',
+    descripcion: 'Control de stock de metales preciosos, piedras, herramientas y consumibles necesarios para la producción.',
+    enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-3'
+  },
+  {
+    categoria: '📦 MATERIALES',
+    segmento: '📥 Solicitudes de Material',
+    descripcion: 'Sistema para solicitar materiales faltantes y hacer seguimiento a las compras pendientes.',
+    enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-4'
+  },
+  {
+    categoria: '👷 PERSONAL TALLER',
+    segmento: '📅 Asignación de Tareas',
+    descripcion: 'Distribución de trabajo entre los diferentes especialistas del taller según sus habilidades.',
+    enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-5'
+  },
+  {
+    categoria: '👷 PERSONAL TALLER',
+    segmento: '🎯 Control de Calidad',
+    descripcion: 'Registro de revisiones de calidad y correcciones necesarias antes de la entrega final.',
+    enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-6'
+  },
+  {
+    categoria: '🔄 MANTENIMIENTO',
+    segmento: '🛠️ Mantenimiento de Equipos',
+    descripcion: 'Programa de mantenimiento preventivo y correctivo de maquinaria y herramientas del taller.',
+    enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-7'
+  },
+  {
+    categoria: '🔄 MANTENIMIENTO',
+    segmento: '📋 Registro de Incidencias',
+    descripcion: 'Documentación de problemas técnicos, averías y soluciones aplicadas.',
+    enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-8'
+  }
+];
+
     
     let documentos = [...documentosDefecto];
     let usuarioActual = '';
@@ -751,44 +803,43 @@
     window.addEventListener('offline', verificarConexion);
 
     function verificarCredenciales() {
-      const usuario = document.getElementById('usuario').value.toLowerCase().trim();
-      const password = document.getElementById('password').value;
-      const loginBtn = document.querySelector('#login button');
-      const loginText = document.getElementById('login-text');
-      const loginLoading = document.getElementById('login-loading');
-      const errorDiv = document.getElementById('error');
+  const usuario = document.getElementById('usuario').value.toLowerCase().trim();
+  const password = document.getElementById('password').value;
+  const loginBtn = document.querySelector('#login button');
+  const loginText = document.getElementById('login-text');
+  const loginLoading = document.getElementById('login-loading');
+  const errorDiv = document.getElementById('error');
 
-      // Mostrar loading
-      loginText.style.display = 'none';
-      loginLoading.style.display = 'inline-block';
-      loginBtn.disabled = true;
+  loginText.style.display = 'none';
+  loginLoading.style.display = 'inline-block';
+  loginBtn.disabled = true;
 
-      setTimeout(() => {
-        if (usuarios[usuario] && usuarios[usuario].password === password) {
-          usuarioActual = usuario;
-          document.getElementById('login').style.display = 'none';
-          document.getElementById('contenido').style.display = 'block';
-          document.getElementById('user-display').textContent = usuario;
-          
-          // Mostrar botones según tipo de usuario
-          if (usuarios[usuario].tipo === 'admin') {
-            document.getElementById('btn-sync').style.display = 'inline-flex';
-            mostrarPanelAdmin();
-          } else {
-            mostrarDocumentos();
-          }
-          
-          cargarDatos();
-          verificarConexion();
-        } else {
-          errorDiv.style.display = 'block';
-          // Ocultar loading
-          loginText.style.display = 'inline';
-          loginLoading.style.display = 'none';
-          loginBtn.disabled = false;
-        }
-      }, 1000);
+  setTimeout(() => {
+    if (usuarios[usuario] && usuarios[usuario].password === password) {
+      usuarioActual = usuario;
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('contenido').style.display = 'block';
+      document.getElementById('user-display').textContent = usuario;
+      
+      if (usuarios[usuario].tipo === 'admin') {
+        document.getElementById('btn-sync').style.display = 'inline-flex';
+        mostrarPanelAdmin();
+      } else if (usuarios[usuario].tipo === 'taller') {
+        mostrarDocumentosTaller();
+      } else {
+        mostrarDocumentos();
+      }
+      
+      cargarDatos();
+      verificarConexion();
+    } else {
+      errorDiv.style.display = 'block';
+      loginText.style.display = 'inline';
+      loginLoading.style.display = 'none';
+      loginBtn.disabled = false;
     }
+  }, 1000);
+}
 
     function cerrarSesion() {
       document.getElementById('login').style.display = 'flex';
@@ -891,6 +942,33 @@
         </tr>
       `).join('');
     }
+
+
+    function mostrarDocumentosTaller() {
+  const panel = document.getElementById('panel');
+  const categorias = [...new Set(documentosTaller.map(doc => doc.categoria))];
+  
+  let html = '';
+  categorias.forEach(categoria => {
+    html += `<h2 class="categoria-header">${categoria}</h2>`;
+    html += '<div class="grid">';
+    
+    documentosTaller.filter(doc => doc.categoria === categoria).forEach(doc => {
+      html += `
+        <div class="card">
+          <div class="segmento">${doc.segmento}</div>
+          <div class="descripcion">${doc.descripcion}</div>
+          <a href="${doc.enlace}" target="_blank">Abrir Documento</a>
+        </div>
+      `;
+    });
+    
+    html += '</div>';
+  });
+  
+  panel.innerHTML = html;
+}
+
 
     function agregarDocumento() {
       document.getElementById('form-documento').style.display = 'block';
@@ -1055,6 +1133,18 @@
     function descargarJSON() {
       // Función removida - no se necesita
     }
+
+    
+// Modificar la función volverInicio para incluir taller
+function volverInicio() {
+  if (usuarios[usuarioActual] && usuarios[usuarioActual].tipo === 'admin') {
+    mostrarPanelAdmin();
+  } else if (usuarios[usuarioActual] && usuarios[usuarioActual].tipo === 'taller') {
+    mostrarDocumentosTaller();
+  } else {
+    mostrarDocumentos();
+  }
+}
 
     // Cargar datos al iniciar
     document.addEventListener('DOMContentLoaded', function() {
