@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 
@@ -362,6 +361,12 @@
       border: 1px solid #f5c6cb;
     }
 
+    .sync-status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -472,38 +477,33 @@
       box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
     }
 
-    .export-section {
-      background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-      padding: 1.5rem;
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+      color: white;
+      padding: 1rem 1.5rem;
       border-radius: 12px;
-      margin: 2rem 0;
-      border: 1px solid rgba(23, 162, 184, 0.2);
+      box-shadow: 0 8px 25px rgba(23, 162, 184, 0.3);
+      z-index: 1000;
+      transform: translateX(400px);
+      transition: transform 0.3s ease;
+      font-weight: 600;
     }
 
-    .export-section h3 {
-      color: #17a2b8;
-      margin-bottom: 1rem;
+    .notification.show {
+      transform: translateX(0);
+    }
+
+    .version-info {
       text-align: center;
-    }
-
-    .export-section textarea {
-      width: 100%;
-      height: 200px;
-      padding: 1rem;
-      border: 1px solid #ccc;
+      padding: 0.5rem;
+      background: #f8f9fa;
       border-radius: 8px;
-      font-family: 'Courier New', monospace;
+      margin-bottom: 1rem;
       font-size: 0.85rem;
-      background: #fff;
-      resize: vertical;
-    }
-
-    .export-buttons {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      margin-top: 1rem;
-      flex-wrap: wrap;
+      color: #666;
     }
 
     @media (max-width: 768px) {
@@ -536,8 +536,15 @@
         margin: 1rem;
       }
 
-      .export-buttons {
-        flex-direction: column;
+      .notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        transform: translateY(-100px);
+      }
+
+      .notification.show {
+        transform: translateY(0);
       }
     }
 
@@ -573,6 +580,11 @@
       background: #dc3545;
     }
 
+    .status-sync {
+      background: #17a2b8;
+      animation: pulse 1s infinite;
+    }
+
     @keyframes pulse {
       0% { opacity: 1; }
       50% { opacity: 0.5; }
@@ -582,6 +594,8 @@
 </head>
 
 <body>
+  <div id="notification" class="notification"></div>
+
   <div id="login" class="login">
     <div class="login-box">
       <div class="logo">
@@ -611,10 +625,7 @@
             <button class="btn btn-secondary" onclick="volverInicio()" id="btn-inicio" style="display: none;">
               🏠 Inicio
             </button>
-            <button class="btn btn-export" onclick="mostrarExportacion()" id="btn-exportar" style="display: none;">
-              📄 Exportar Datos
-            </button>
-            <button class="btn btn-primary" onclick="sincronizarDatos()" id="btn-sync" style="display: none;">
+            <button class="btn btn-primary" onclick="sincronizarManual()" id="btn-sync" style="display: none;">
               🔄 Sincronizar
             </button>
             <button class="btn btn-danger" onclick="cerrarSesion()">
@@ -627,12 +638,15 @@
 
     <div class="container">
       <div id="sync-status" class="sync-status" style="display: none;"></div>
+      <div class="version-info" id="version-info">
+        Versión de datos: <span id="version-number">1.0</span> | 
+        Última actualización: <span id="last-update">Nunca</span>
+      </div>
       <div id="panel"></div>
     </div>
   </div>
 
   <script>
-
     const usuarios = {
       'bosa': { password: 'bosa2025', tipo: 'sede' },
       'casablanca': { password: 'casablanca2025', tipo: 'sede' },
@@ -644,9 +658,20 @@
       'taller': { password: 'taller2025', tipo: 'taller' }
     };
 
-
     // URL del Apps Script
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbBHsOmoomcWJteYdfnzdUy_UD9F6UJ0cgBP9nq4IVdRGZQQNeNT0a8gDLaFfIXE29mQ/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQrM6PjLbrHlCqVrwz9JVVeyIqI2AEA_dkKgLX7NfLpxbq-Q9Z8wELkF7S1hXGhUzY/exec";
+
+
+    
+    // Variables globales
+    let documentos = [];
+    let documentosTaller = [];
+    let usuarioActual = '';
+    let conexionOnline = false;
+    let versionActual = localStorage.getItem('dataVersion') || '1.0';
+    let ultimaActualizacion = localStorage.getItem('lastUpdate') || 'Nunca';
+    let syncInterval;
+    let checkInterval;
 
     // Datos por defecto
     const documentosDefecto = [
@@ -730,122 +755,348 @@
       }
     ];
 
-    const documentosTaller = [
-  {
-    categoria: '🔧 PRODUCCIÓN TALLER',
-    segmento: '📋 Control de Órdenes de Trabajo',
-    descripcion: 'Sistema para gestionar y hacer seguimiento a todas las órdenes de trabajo del taller, incluyendo fabricaciones, reparaciones y mantenimientos.',
-    enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-1'
-  },
-  {
-    categoria: '🔧 PRODUCCIÓN TALLER',
-    segmento: '⏱️ Tiempos de Producción',
-    descripcion: 'Registro y control de tiempos estimados vs reales de cada proceso de producción para optimizar la planificación.',
-    enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-2'
-  },
-  {
-    categoria: '📦 MATERIALES',
-    segmento: '📊 Inventario de Materiales',
-    descripcion: 'Control de stock de metales preciosos, piedras, herramientas y consumibles necesarios para la producción.',
-    enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-3'
-  },
-  {
-    categoria: '📦 MATERIALES',
-    segmento: '📥 Solicitudes de Material',
-    descripcion: 'Sistema para solicitar materiales faltantes y hacer seguimiento a las compras pendientes.',
-    enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-4'
-  },
-  {
-    categoria: '👷 PERSONAL TALLER',
-    segmento: '📅 Asignación de Tareas',
-    descripcion: 'Distribución de trabajo entre los diferentes especialistas del taller según sus habilidades.',
-    enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-5'
-  },
-  {
-    categoria: '👷 PERSONAL TALLER',
-    segmento: '🎯 Control de Calidad',
-    descripcion: 'Registro de revisiones de calidad y correcciones necesarias antes de la entrega final.',
-    enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-6'
-  },
-  {
-    categoria: '🔄 MANTENIMIENTO',
-    segmento: '🛠️ Mantenimiento de Equipos',
-    descripcion: 'Programa de mantenimiento preventivo y correctivo de maquinaria y herramientas del taller.',
-    enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-7'
-  },
-  {
-    categoria: '🔄 MANTENIMIENTO',
-    segmento: '📋 Registro de Incidencias',
-    descripcion: 'Documentación de problemas técnicos, averías y soluciones aplicadas.',
-    enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-8'
-  }
-];
+    const documentosTallerDefecto = [
+      {
+        categoria: '🔧 PRODUCCIÓN TALLER',
+        segmento: '📋 Control de Órdenes de Trabajo',
+        descripcion: 'Sistema para gestionar y hacer seguimiento a todas las órdenes de trabajo del taller, incluyendo fabricaciones, reparaciones y mantenimientos.',
+        enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-1'
+      },
+      {
+        categoria: '🔧 PRODUCCIÓN TALLER',
+        segmento: '⏱️ Tiempos de Producción',
+        descripcion: 'Registro y control de tiempos estimados vs reales de cada proceso de producción para optimizar la planificación.',
+        enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-2'
+      },
+      {
+        categoria: '📦 MATERIALES',
+        segmento: '📊 Inventario de Materiales',
+        descripcion: 'Control de stock de metales preciosos, piedras, herramientas y consumibles necesarios para la producción.',
+        enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-3'
+      },
+      {
+        categoria: '📦 MATERIALES',
+        segmento: '📥 Solicitudes de Material',
+        descripcion: 'Sistema para solicitar materiales faltantes y hacer seguimiento a las compras pendientes.',
+        enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-4'
+      },
+      {
+        categoria: '👷 PERSONAL TALLER',
+        segmento: '📅 Asignación de Tareas',
+        descripcion: 'Distribución de trabajo entre los diferentes especialistas del taller según sus habilidades.',
+        enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-5'
+      },
+      {
+        categoria: '👷 PERSONAL TALLER',
+        segmento: '🎯 Control de Calidad',
+        descripcion: 'Registro de revisiones de calidad y correcciones necesarias antes de la entrega final.',
+        enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-6'
+      },
+      {
+        categoria: '🔄 MANTENIMIENTO',
+        segmento: '🛠️ Mantenimiento de Equipos',
+        descripcion: 'Programa de mantenimiento preventivo y correctivo de maquinaria y herramientas del taller.',
+        enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-7'
+      },
+      {
+        categoria: '🔄 MANTENIMIENTO',
+        segmento: '📋 Registro de Incidencias',
+        descripcion: 'Documentación de problemas técnicos, averías y soluciones aplicadas.',
+        enlace: 'https://docs.google.com/spreadsheets/d/ejemplo-taller-8'
+      }
+    ];
 
-    
-    let documentos = [...documentosDefecto];
-    let usuarioActual = '';
-    let conexionOnline = false;
+    // Funciones de utilidad
+    function mostrarNotificacion(mensaje, tipo = 'info') {
+      const notification = document.getElementById('notification');
+      notification.textContent = mensaje;
+      notification.className = `notification ${tipo}`;
+      notification.classList.add('show');
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 4000);
+    }
 
-    // Verificar conexión
+    function actualizarVersionInfo() {
+      document.getElementById('version-number').textContent = versionActual;
+      document.getElementById('last-update').textContent = ultimaActualizacion;
+    }
+
     function verificarConexion() {
       const indicator = document.getElementById('status-indicator');
       if (navigator.onLine) {
         conexionOnline = true;
         indicator.className = 'status-indicator status-online';
-        indicator.title = 'Conexión activa';
+        indicator.title = 'Conexión activa - Sincronización automática activada';
       } else {
         conexionOnline = false;
         indicator.className = 'status-indicator status-offline';
-        indicator.title = 'Sin conexión';
+        indicator.title = 'Sin conexión - Usando datos locales';
       }
     }
 
-    // Verificar conexión al cargar y cuando cambie
-    window.addEventListener('load', verificarConexion);
-    window.addEventListener('online', verificarConexion);
-    window.addEventListener('offline', verificarConexion);
+    function iniciarSincronizacionAutomatica() {
+      // Sincronización cada 30 segundos para administradores, cada 2 minutos para usuarios normales
+      const intervalo = usuarios[usuarioActual]?.tipo === 'admin' ? 30000 : 120000;
+      
+      syncInterval = setInterval(() => {
+        if (conexionOnline && usuarioActual) {
+          verificarActualizaciones();
+        }
+      }, intervalo);
 
-    function verificarCredenciales() {
-  const usuario = document.getElementById('usuario').value.toLowerCase().trim();
-  const password = document.getElementById('password').value;
-  const loginBtn = document.querySelector('#login button');
-  const loginText = document.getElementById('login-text');
-  const loginLoading = document.getElementById('login-loading');
-  const errorDiv = document.getElementById('error');
-
-  loginText.style.display = 'none';
-  loginLoading.style.display = 'inline-block';
-  loginBtn.disabled = true;
-
-  setTimeout(() => {
-if (usuarios[usuario] && usuarios[usuario].password === password) {
-  usuarioActual = usuario;
-  document.getElementById('login').style.display = 'none';
-  document.getElementById('contenido').style.display = 'block';
-  document.getElementById('user-display').textContent = usuario;
-  
-  if (usuarios[usuario].tipo === 'admin') {
-    document.getElementById('btn-sync').style.display = 'inline-flex';
-    mostrarPanelAdmin();
-  } else if (usuarios[usuario].tipo === 'taller') {
-    mostrarDocumentosTaller();
-  } else if (usuarios[usuario].tipo === 'completo') {
-    mostrarDocumentosCompletos(); // Nueva función
-  } else {
-    mostrarDocumentos();
-  }
-      cargarDatos();
-      verificarConexion();
-    } else {
-      errorDiv.style.display = 'block';
-      loginText.style.display = 'inline';
-      loginLoading.style.display = 'none';
-      loginBtn.disabled = false;
+      // Verificación de cambios cada 10 segundos para todos los usuarios
+      checkInterval = setInterval(() => {
+        if (conexionOnline && usuarioActual) {
+          verificarCambiosServidor();
+        }
+      }, 10000);
     }
-  }, 1000);
-}
+
+    function detenerSincronizacionAutomatica() {
+      if (syncInterval) {
+        clearInterval(syncInterval);
+        syncInterval = null;
+      }
+      if (checkInterval) {
+        clearInterval(checkInterval);
+        checkInterval = null;
+      }
+    }
+
+    async function verificarCambiosServidor() {
+      try {
+        const response = await fetch(`${SCRIPT_URL}?action=checkVersion`);
+        const data = await response.json();
+        
+        if (data.version && data.version !== versionActual) {
+          const indicator = document.getElementById('status-indicator');
+          indicator.className = 'status-indicator status-sync';
+          indicator.title = 'Actualizaciones disponibles';
+          
+          mostrarNotificacion('📄 Nuevas actualizaciones disponibles. Sincronizando...', 'info');
+          await cargarDatosDelServidor();
+        }
+      } catch (error) {
+        console.log('Error verificando cambios:', error);
+      }
+    }
+    function mostrarDatosPorDefecto() {
+    const contenedor = document.getElementById("contenedor-documentos");
+    contenedor.innerHTML = `<p style="color: #999;">No se encontraron documentos. Por favor, revisa la conexión o intenta más tarde.</p>`;
+  }
+
+    async function verificarActualizaciones() {
+      if (!conexionOnline) return;
+      
+      try {
+        await cargarDatosDelServidor();
+      } catch (error) {
+        console.log('Error en sincronización automática:', error);
+      }
+    }
+
+    async function cargarDatosDelServidor() {
+      try {
+        const response = await fetch(SCRIPT_URL);
+        const data = await response.json();
+        
+        if (data && data.documentos && Array.isArray(data.documentos)) {
+          const datosAnteriores = JSON.stringify(documentos);
+          const datosTallerAnteriores = JSON.stringify(documentosTaller);
+          
+          documentos = data.documentos;
+          documentosTaller = data.documentosTaller || documentosTallerDefecto;
+          
+          // Actualizar versión y timestamp
+          if (data.version) {
+            versionActual = data.version;
+            localStorage.setItem('dataVersion', versionActual);
+          }
+          
+          const ahora = new Date().toLocaleString('es-CO');
+          ultimaActualizacion = ahora;
+          localStorage.setItem('lastUpdate', ultimaActualizacion);
+          
+          // Guardar datos localmente
+          localStorage.setItem('documentos', JSON.stringify(documentos));
+          localStorage.setItem('documentosTaller', JSON.stringify(documentosTaller));
+          
+          actualizarVersionInfo();
+          
+          // Verificar si hubo cambios y actualizar la vista
+          const huboCambios = datosAnteriores !== JSON.stringify(documentos) || 
+                            datosTallerAnteriores !== JSON.stringify(documentosTaller);
+          
+          if (huboCambios) {
+            mostrarNotificacion('✅ Datos actualizados correctamente', 'success');
+            
+            // Refrescar la vista actual
+            if (usuarios[usuarioActual]?.tipo === 'admin') {
+              if (document.getElementById('panel').innerHTML.includes('Panel de Administración')) {
+                mostrarPanelAdmin();
+              }
+            } else {
+              refrescarVistaActual();
+            }
+          }
+          
+          verificarConexion(); // Restaurar indicador normal
+          
+        } else {
+          console.log('No hay datos válidos en el servidor, usando datos por defecto');
+          if (documentos.length === 0) {
+            documentos = [...documentosDefecto];
+            documentosTaller = [...documentosTallerDefecto];
+          }
+        }
+      } catch (error) {
+        console.error('Error al cargar datos del servidor:', error);
+        if (documentos.length === 0) {
+          documentos = [...documentosDefecto];
+          documentosTaller = [...documentosTallerDefecto];
+        }
+      }
+    }
+
+    function cargarDatosLocales() {
+      const datosGuardados = localStorage.getItem('documentos');
+      const datosTallerGuardados = localStorage.getItem('documentosTaller');
+      
+      if (datosGuardados) {
+        try {
+          documentos = JSON.parse(datosGuardados);
+        } catch (e) {
+          documentos = [...documentosDefecto];
+        }
+      } else {
+        documentos = [...documentosDefecto];
+      }
+      
+      if (datosTallerGuardados) {
+        try {
+          documentosTaller = JSON.parse(datosTallerGuardados);
+        } catch (e) {
+          documentosTaller = [...documentosTallerDefecto];
+        }
+      } else {
+        documentosTaller = [...documentosTallerDefecto];
+      }
+    }
+
+    function refrescarVistaActual() {
+      const tipoUsuario = usuarios[usuarioActual]?.tipo;
+      
+      if (tipoUsuario === 'taller') {
+        mostrarDocumentosTaller();
+      } else if (tipoUsuario === 'completo') {
+        mostrarDocumentosCompletos();
+      } else if (tipoUsuario === 'admin') {
+        // No refrescar si estamos en el panel de admin
+        if (!document.getElementById('panel').innerHTML.includes('Panel de Administración')) {
+          mostrarDocumentosCompletos();
+        }
+      } else {
+        mostrarDocumentos();
+      }
+    }
+
+    async function sincronizarConServidor() {
+      if (!conexionOnline) {
+        mostrarNotificacion('❌ Sin conexión a internet', 'error');
+        return false;
+      }
+
+      try {
+        const payload = {
+          action: 'sync',
+          documentos: documentos,
+          documentosTaller: documentosTaller,
+          version: (parseFloat(versionActual) + 0.1).toFixed(1),
+          timestamp: new Date().toISOString()
+        };
+
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          versionActual = payload.version;
+          localStorage.setItem('dataVersion', versionActual);
+          
+          const ahora = new Date().toLocaleString('es-CO');
+          ultimaActualizacion = ahora;
+          localStorage.setItem('lastUpdate', ultimaActualizacion);
+          
+          actualizarVersionInfo();
+          mostrarNotificacion('✅ Cambios sincronizados globalmente', 'success');
+          return true;
+        } else {
+          throw new Error(data.error || 'Error desconocido');
+        }
+      } catch (error) {
+        console.error('Error al sincronizar con servidor:', error);
+        mostrarNotificacion('❌ Error al sincronizar cambios', 'error');
+        return false;
+      }
+    }
+    // Funciones de autenticación
+    function verificarCredenciales() {
+      const usuario = document.getElementById('usuario').value.toLowerCase().trim();
+      const password = document.getElementById('password').value;
+      const loginBtn = document.querySelector('#login button');
+      const loginText = document.getElementById('login-text');
+      const loginLoading = document.getElementById('login-loading');
+      const errorDiv = document.getElementById('error');
+
+      loginText.style.display = 'none';
+      loginLoading.style.display = 'inline-block';
+      loginBtn.disabled = true;
+
+      setTimeout(() => {
+        if (usuarios[usuario] && usuarios[usuario].password === password) {
+          usuarioActual = usuario;
+          document.getElementById('login').style.display = 'none';
+          document.getElementById('contenido').style.display = 'block';
+          document.getElementById('user-display').textContent = usuario;
+          
+          // Mostrar botones según el tipo de usuario
+          if (usuarios[usuario].tipo === 'admin') {
+            document.getElementById('btn-sync').style.display = 'inline-flex';
+            mostrarPanelAdmin();
+          } else if (usuarios[usuario].tipo === 'taller') {
+            mostrarDocumentosTaller();
+          } else if (usuarios[usuario].tipo === 'completo') {
+            mostrarDocumentosCompletos();
+          } else {
+            mostrarDocumentos();
+          }
+          
+          // Cargar datos y iniciar sincronización
+          cargarDatosLocales();
+          cargarDatosDelServidor();
+          verificarConexion();
+          iniciarSincronizacionAutomatica();
+          actualizarVersionInfo();
+          
+        } else {
+          errorDiv.style.display = 'block';
+          loginText.style.display = 'inline';
+          loginLoading.style.display = 'none';
+          loginBtn.disabled = false;
+        }
+      }, 1000);
+    }
 
     function cerrarSesion() {
+      detenerSincronizacionAutomatica();
+      
       document.getElementById('login').style.display = 'flex';
       document.getElementById('contenido').style.display = 'none';
       document.getElementById('usuario').value = '';
@@ -855,37 +1106,46 @@ if (usuarios[usuario] && usuarios[usuario].password === password) {
     }
 
     function volverInicio() {
-      if (usuarios[usuarioActual] && usuarios[usuarioActual].tipo === 'admin') {
+      const tipoUsuario = usuarios[usuarioActual]?.tipo;
+      
+      if (tipoUsuario === 'admin') {
         mostrarPanelAdmin();
+      } else if (tipoUsuario === 'taller') {
+        mostrarDocumentosTaller();
+      } else if (tipoUsuario === 'completo') {
+        mostrarDocumentosCompletos();
       } else {
         mostrarDocumentos();
       }
     }
-function mostrarDocumentosCompletos() {
-  const panel = document.getElementById('panel');
-  const todosDocumentos = [...documentos, ...documentosTaller];
-  const categorias = [...new Set(todosDocumentos.map(doc => doc.categoria))];
-  
-  let html = '';
-  categorias.forEach(categoria => {
-    html += `<h2 class="categoria-header">${categoria}</h2>`;
-    html += '<div class="grid">';
-    
-    todosDocumentos.filter(doc => doc.categoria === categoria).forEach(doc => {
-      html += `
-        <div class="card">
-          <div class="segmento">${doc.segmento}</div>
-          <div class="descripcion">${doc.descripcion}</div>
-          <a href="${doc.enlace}" target="_blank">Abrir Documento</a>
-        </div>
-      `;
-    });
-    
-    html += '</div>';
-  });
-  
-  panel.innerHTML = html;
-}
+
+    // Funciones de visualización
+    function mostrarDocumentosCompletos() {
+      const panel = document.getElementById('panel');
+      const todosDocumentos = [...documentos, ...documentosTaller];
+      const categorias = [...new Set(todosDocumentos.map(doc => doc.categoria))];
+      
+      let html = '';
+      categorias.forEach(categoria => {
+        html += `<h2 class="categoria-header">${categoria}</h2>`;
+        html += '<div class="grid">';
+        
+        todosDocumentos.filter(doc => doc.categoria === categoria).forEach(doc => {
+          html += `
+            <div class="card">
+              <div class="segmento">${doc.segmento}</div>
+              <div class="descripcion">${doc.descripcion}</div>
+              <a href="${doc.enlace}" target="_blank">Abrir Documento</a>
+            </div>
+          `;
+        });
+        
+        html += '</div>';
+      });
+      
+      panel.innerHTML = html;
+    }
+
     function mostrarDocumentos() {
       const panel = document.getElementById('panel');
       const categorias = [...new Set(documentos.map(doc => doc.categoria))];
@@ -911,6 +1171,32 @@ function mostrarDocumentosCompletos() {
       panel.innerHTML = html;
     }
 
+    function mostrarDocumentosTaller() {
+      const panel = document.getElementById('panel');
+      const categorias = [...new Set(documentosTaller.map(doc => doc.categoria))];
+      
+      let html = '';
+      categorias.forEach(categoria => {
+        html += `<h2 class="categoria-header">${categoria}</h2>`;
+        html += '<div class="grid">';
+        
+        documentosTaller.filter(doc => doc.categoria === categoria).forEach(doc => {
+          html += `
+            <div class="card">
+              <div class="segmento">${doc.segmento}</div>
+              <div class="descripcion">${doc.descripcion}</div>
+              <a href="${doc.enlace}" target="_blank">Abrir Documento</a>
+            </div>
+          `;
+        });
+        
+        html += '</div>';
+      });
+      
+      panel.innerHTML = html;
+    }
+
+    // Funciones del panel de administración
     function mostrarPanelAdmin() {
       const panel = document.getElementById('panel');
       panel.innerHTML = `
@@ -921,13 +1207,17 @@ function mostrarDocumentosCompletos() {
             <button class="btn btn-primary" onclick="agregarDocumento()">
               ➕ Agregar Documento
             </button>
-            <button class="btn btn-secondary" onclick="mostrarDocumentos()">
-              📋 Ver Documentos
+            <button class="btn btn-secondary" onclick="mostrarDocumentosCompletos()">
+              📋 Ver Todos los Documentos
             </button>
           </div>
 
           <div id="form-documento" style="display: none; margin-bottom: 2rem;">
             <h3>Nuevo Documento</h3>
+            <select id="tipo-documento" class="admin-input" style="margin-bottom: 1rem;">
+              <option value="general">Documento General</option>
+              <option value="taller">Documento de Taller</option>
+            </select>
             <input type="text" id="nueva-categoria" placeholder="Categoría" class="admin-input" style="margin-bottom: 1rem;">
             <input type="text" id="nuevo-segmento" placeholder="Segmento" class="admin-input" style="margin-bottom: 1rem;">
             <textarea id="nueva-descripcion" placeholder="Descripción" class="admin-textarea" style="margin-bottom: 1rem;"></textarea>
@@ -938,65 +1228,59 @@ function mostrarDocumentosCompletos() {
             </div>
           </div>
 
-          <table>
-            <thead>
-              <tr>
-                <th>Categoría</th>
-                <th>Segmento</th>
-                <th>Descripción</th>
-                <th>Enlace</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="tabla-documentos">
-              ${generarFilasTabla()}
-            </tbody>
-          </table>
+          <div style="margin-bottom: 2rem;">
+            <h3>Documentos Generales</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Categoría</th>
+                  <th>Segmento</th>
+                  <th>Descripción</th>
+                  <th>Enlace</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-documentos">
+                ${generarFilasTabla(documentos, 'general')}
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <h3>Documentos de Taller</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Categoría</th>
+                  <th>Segmento</th>
+                  <th>Descripción</th>
+                  <th>Enlace</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-documentos-taller">
+                ${generarFilasTabla(documentosTaller, 'taller')}
+              </tbody>
+            </table>
+          </div>
         </div>
       `;
     }
 
-    function generarFilasTabla() {
-      return documentos.map((doc, index) => `
+    function generarFilasTabla(docs, tipo) {
+      return docs.map((doc, index) => `
         <tr>
-          <td><input type="text" value="${doc.categoria}" class="admin-input" data-field="categoria" data-index="${index}"></td>
-          <td><input type="text" value="${doc.segmento}" class="admin-input" data-field="segmento" data-index="${index}"></td>
-          <td><textarea class="admin-textarea" data-field="descripcion" data-index="${index}">${doc.descripcion}</textarea></td>
-          <td><input type="url" value="${doc.enlace}" class="admin-input" data-field="enlace" data-index="${index}"></td>
+          <td><input type="text" value="${doc.categoria}" class="admin-input" data-field="categoria" data-index="${index}" data-type="${tipo}"></td>
+          <td><input type="text" value="${doc.segmento}" class="admin-input" data-field="segmento" data-index="${index}" data-type="${tipo}"></td>
+          <td><textarea class="admin-textarea" data-field="descripcion" data-index="${index}" data-type="${tipo}">${doc.descripcion}</textarea></td>
+          <td><input type="url" value="${doc.enlace}" class="admin-input" data-field="enlace" data-index="${index}" data-type="${tipo}"></td>
           <td class="actions-cell">
-            <button class="save-btn" onclick="guardarCambios(${index})">💾</button>
-            <button class="delete-btn" onclick="eliminarDocumento(${index})">🗑️</button>
+            <button class="save-btn" onclick="guardarCambios(${index}, '${tipo}')">💾</button>
+            <button class="delete-btn" onclick="eliminarDocumento(${index}, '${tipo}')">🗑️</button>
           </td>
         </tr>
       `).join('');
     }
-
-
-    function mostrarDocumentosTaller() {
-  const panel = document.getElementById('panel');
-  const categorias = [...new Set(documentosTaller.map(doc => doc.categoria))];
-  
-  let html = '';
-  categorias.forEach(categoria => {
-    html += `<h2 class="categoria-header">${categoria}</h2>`;
-    html += '<div class="grid">';
-    
-    documentosTaller.filter(doc => doc.categoria === categoria).forEach(doc => {
-      html += `
-        <div class="card">
-          <div class="segmento">${doc.segmento}</div>
-          <div class="descripcion">${doc.descripcion}</div>
-          <a href="${doc.enlace}" target="_blank">Abrir Documento</a>
-        </div>
-      `;
-    });
-    
-    html += '</div>';
-  });
-  
-  panel.innerHTML = html;
-}
-
 
     function agregarDocumento() {
       document.getElementById('form-documento').style.display = 'block';
@@ -1008,13 +1292,15 @@ function mostrarDocumentosCompletos() {
     }
 
     function limpiarFormulario() {
+      document.getElementById('tipo-documento').value = 'general';
       document.getElementById('nueva-categoria').value = '';
       document.getElementById('nuevo-segmento').value = '';
       document.getElementById('nueva-descripcion').value = '';
       document.getElementById('nuevo-enlace').value = '';
     }
 
-    function guardarDocumento() {
+    async function guardarDocumento() {
+      const tipo = document.getElementById('tipo-documento').value;
       const categoria = document.getElementById('nueva-categoria').value.trim();
       const segmento = document.getElementById('nuevo-segmento').value.trim();
       const descripcion = document.getElementById('nueva-descripcion').value.trim();
@@ -1026,68 +1312,65 @@ function mostrarDocumentosCompletos() {
       }
 
       const nuevoDoc = { categoria, segmento, descripcion, enlace };
-      documentos.push(nuevoDoc);
+      
+      if (tipo === 'taller') {
+        documentosTaller.push(nuevoDoc);
+      } else {
+        documentos.push(nuevoDoc);
+      }
       
       cancelarFormulario();
-      mostrarPanelAdmin();
       
-      // Sincronizar con Google Sheets
-      sincronizarConServidor();
+      // Sincronizar con servidor
+      const sincronizado = await sincronizarConServidor();
+      if (sincronizado) {
+        mostrarPanelAdmin();
+      }
     }
 
-    function guardarCambios(index) {
-      const categoria = document.querySelector(`[data-field="categoria"][data-index="${index}"]`).value.trim();
-      const segmento = document.querySelector(`[data-field="segmento"][data-index="${index}"]`).value.trim();
-      const descripcion = document.querySelector(`[data-field="descripcion"][data-index="${index}"]`).value.trim();
-      const enlace = document.querySelector(`[data-field="enlace"][data-index="${index}"]`).value.trim();
+    async function guardarCambios(index, tipo) {
+      const categoria = document.querySelector(`[data-field="categoria"][data-index="${index}"][data-type="${tipo}"]`).value.trim();
+      const segmento = document.querySelector(`[data-field="segmento"][data-index="${index}"][data-type="${tipo}"]`).value.trim();
+      const descripcion = document.querySelector(`[data-field="descripcion"][data-index="${index}"][data-type="${tipo}"]`).value.trim();
+      const enlace = document.querySelector(`[data-field="enlace"][data-index="${index}"][data-type="${tipo}"]`).value.trim();
 
       if (!categoria || !segmento || !descripcion || !enlace) {
         alert('Todos los campos son obligatorios');
         return;
       }
 
-      documentos[index] = { categoria, segmento, descripcion, enlace };
+      const docActualizado = { categoria, segmento, descripcion, enlace };
       
-      // Sincronizar con Google Sheets
-      sincronizarConServidor();
+      if (tipo === 'taller') {
+        documentosTaller[index] = docActualizado;
+      } else {
+        documentos[index] = docActualizado;
+      }
       
-      alert('Cambios guardados exitosamente');
+      // Sincronizar con servidor
+      const sincronizado = await sincronizarConServidor();
+      if (sincronizado) {
+        mostrarNotificacion('💾 Cambios guardados exitosamente', 'success');
+      }
     }
 
-    function eliminarDocumento(index) {
+    async function eliminarDocumento(index, tipo) {
       if (confirm('¿Estás seguro de que deseas eliminar este documento?')) {
-        documentos.splice(index, 1);
-        mostrarPanelAdmin();
+        if (tipo === 'taller') {
+          documentosTaller.splice(index, 1);
+        } else {
+          documentos.splice(index, 1);
+        }
         
-        // Sincronizar con Google Sheets
-        sincronizarConServidor();
+        // Sincronizar con servidor
+        const sincronizado = await sincronizarConServidor();
+        if (sincronizado) {
+          mostrarPanelAdmin();
+        }
       }
     }
 
-    function cargarDatos() {
-      if (!conexionOnline) {
-        console.log('Sin conexión, usando datos locales');
-        return;
-      }
-
-      fetch(SCRIPT_URL)
-        .then(response => response.json())
-        .then(data => {
-          if (data && Array.isArray(data) && data.length > 0) {
-            documentos = data;
-            console.log('Datos cargados desde Google Sheets');
-          } else {
-            console.log('No hay datos en Google Sheets, usando datos por defecto');
-            documentos = [...documentosDefecto];
-          }
-        })
-        .catch(error => {
-          console.error('Error al cargar datos:', error);
-          documentos = [...documentosDefecto];
-        });
-    }
-
-    function sincronizarDatos() {
+    async function sincronizarManual() {
       const btnSync = document.getElementById('btn-sync');
       const statusDiv = document.getElementById('sync-status');
       
@@ -1098,7 +1381,7 @@ function mostrarDocumentosCompletos() {
       statusDiv.className = 'sync-status syncing';
       statusDiv.textContent = 'Sincronizando con Google Sheets...';
 
-      cargarDatos();
+      await cargarDatosDelServidor();
 
       setTimeout(() => {
         btnSync.disabled = false;
@@ -1107,79 +1390,69 @@ function mostrarDocumentosCompletos() {
         statusDiv.className = 'sync-status success';
         statusDiv.textContent = 'Sincronización completada exitosamente';
         
-        if (usuarios[usuarioActual] && usuarios[usuarioActual].tipo === 'admin') {
-          mostrarPanelAdmin();
-        } else {
-          mostrarDocumentos();
-        }
+        refrescarVistaActual();
 
         setTimeout(() => {
           statusDiv.style.display = 'none';
         }, 3000);
-      }, 2000);
+      }, 1000);
     }
 
-    function sincronizarConServidor() {
+    // Event listeners
+    window.addEventListener('load', () => {
+      verificarConexion();
+      actualizarVersionInfo();
+    });
+    
+    window.addEventListener('online', verificarConexion);
+    window.addEventListener('offline', verificarConexion);
+
+async function sincronizarConServidor() {
       if (!conexionOnline) {
-        console.log('Sin conexión, cambios guardados localmente');
-        return;
+        mostrarNotificacion('❌ Sin conexión a internet', 'error');
+        return false;
       }
 
-      const payload = {
-        action: 'sync',
-        documentos: documentos
-      };
+      try {
+        const payload = {
+          action: 'sync',
+          documentos: documentos,
+          documentosTaller: documentosTaller,
+          version: (parseFloat(versionActual) + 0.1).toFixed(1),
+          timestamp: new Date().toISOString()
+        };
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
 
-      fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload)
-      })
-      .then(response => response.json())
-      .then(data => {
+        const data = await response.json();
+        
         if (data.success) {
-          console.log('Datos sincronizados exitosamente');
+          versionActual = payload.version;
+          localStorage.setItem('dataVersion', versionActual);
+          
+          const ahora = new Date().toLocaleString('es-CO');
+          ultimaActualizacion = ahora;
+          localStorage.setItem('lastUpdate', ultimaActualizacion);
+          
+          actualizarVersionInfo();
+          mostrarNotificacion('✅ Cambios sincronizados globalmente', 'success');
+          return true;
         } else {
-          console.error('Error al sincronizar:', data.error);
+          throw new Error(data.error || 'Error desconocido');
         }
-      })
-      .catch(error => {
-        console.error('Error de red al sincronizar:', error);
-      });
+      } catch (error) {
+        console.error('Error al sincronizar con servidor:', error);
+        mostrarNotificacion('❌ Error al sincronizar cambios', 'error');
+        return false;
+      }
     }
-
-    function mostrarExportacion() {
-      // Función removida - no se necesita
-    }
-
-    function copiarJSON() {
-      // Función removida - no se necesita
-    }
-
-    function descargarJSON() {
-      // Función removida - no se necesita
-    }
+        </script>
+  </body>
+</html>
 
     
-// Modificar la función volverInicio para incluir taller
-function volverInicio() {
-  if (usuarios[usuarioActual] && usuarios[usuarioActual].tipo === 'admin') {
-    mostrarPanelAdmin();
-  } else if (usuarios[usuarioActual] && usuarios[usuarioActual].tipo === 'taller') {
-    mostrarDocumentosTaller();
-  } else if (usuarios[usuarioActual] && usuarios[usuarioActual].tipo === 'completo') {
-    mostrarDocumentosCompletos();
-  } else {
-    mostrarDocumentos();
-  }
-}
-
-    // Cargar datos al iniciar
-    document.addEventListener('DOMContentLoaded', function() {
-      verificarConexion();
-    });
-  </script>
-</body>
-</html>
